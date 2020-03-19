@@ -1,0 +1,14 @@
+#! /bin/sh
+
+dir=`dirname $0`
+
+$dir/../../tests/filter_stderr_basic    |
+
+# Remove "Gleipnir, ..." line and the following copyright line.
+sed "/^Gleipnir, a Valgrind tool/ , /./ d" |
+
+# Filter all the numbers.
+../../tests/filter_numbers |
+
+# Replace "call" with "calls"
+sed "s/ call / calls /"

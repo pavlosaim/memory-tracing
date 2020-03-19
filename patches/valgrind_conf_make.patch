@@ -1,0 +1,25 @@
+Index: Makefile.am
+===================================================================
+--- Makefile.am	(revision 13470)
++++ Makefile.am	(working copy)
+@@ -8,6 +8,7 @@
+ 		callgrind \
+ 		massif \
+ 		lackey \
++		gleipnir \
+ 		none \
+ 		helgrind \
+ 		drd
+Index: configure.ac
+===================================================================
+--- configure.ac  (revision 13531)
++++ configure.ac  (working copy)
+@@ -2686,6 +2686,8 @@
+    massif/Makefile
+    massif/tests/Makefile
+    massif/ms_print
++   gleipnir/Makefile
++   gleipnir/tests/Makefile
+    lackey/Makefile
+    lackey/tests/Makefile
+    none/Makefile

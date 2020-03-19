@@ -1,0 +1,10 @@
+Thu Mar 12 19:06:08 EET 2020
+patching file coregrind/m_debuginfo/debuginfo.c
+Hunk #1 succeeded at 3546 (offset 80 lines).
+Hunk #2 succeeded at 3763 (offset 80 lines).
+Hunk #3 succeeded at 4069 (offset 77 lines).
+patching file include/pub_tool_debuginfo.h
+Hunk #1 succeeded at 150 with fuzz 2 (offset 34 lines).
+patching file Makefile.am
+patching file configure.ac
+Hunk #1 succeeded at 4438 (offset 1752 lines).
