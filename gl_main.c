@@ -549,6 +549,7 @@ static VG_REGPARM(2) void trace_instr(Addr addr, SizeT size)
 
 static VG_REGPARM(2) void trace_load(Addr addr, SizeT size)
 {
+	int dontcare = 0;
   global_counter.tload++;
 
   if(INSTRUMENT == False)
@@ -600,21 +601,26 @@ static VG_REGPARM(2) void trace_load(Addr addr, SizeT size)
     global_counter.heap++;
   }
   else if(addr >= bMMap && addr <= tMMap){
-    VG_(sprintf)(_sz_tid, "%lu %d M", size, _tid);
+    //VG_(sprintf)(_sz_tid, "%lu %d M", size, _tid);
     global_counter.global++;
   }
   else {
-    VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
+    //VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
     global_counter.global++;
   }
 
   if( GL_UNLIKELY(fnname != NULL) ){
     finish_trace_line(addr, size, _debug_info);
-    VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n",_address, _sz_tid, current_soname, fnname, _debug_info);
+    //VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n",_address, _sz_tid, current_soname, fnname, _debug_info);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, _debug_info);
   }
-  else{
-    VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+  else if(dontcare == 0){
+    //VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, fnname);
   }
+
   
   wrout(fd_trace, line_buffer);
 }
@@ -638,6 +644,7 @@ static VG_REGPARM(2) void trace_store(Addr addr, SizeT size)
   _debug_info[0] = '\0';
 
   global_counter.store++;
+
 
   if(clo_map_virt_to_phys == True){
     paddr = gl_get_physaddr(addr);
@@ -671,16 +678,20 @@ static VG_REGPARM(2) void trace_store(Addr addr, SizeT size)
     global_counter.heap++;
   }
   else{
-    VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
+    //VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
     global_counter.global++;
   }
 
   if(fnname != NULL){
     finish_trace_line(addr, size, _debug_info);
-    VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n",_address, _sz_tid, current_soname, fnname, _debug_info);
+    //VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n",_address, _sz_tid, current_soname, fnname, _debug_info);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, _debug_info);
   }
   else{
-    VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+    //VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, fnname);
   }
   wrout(fd_trace, line_buffer);
 }
@@ -737,16 +748,20 @@ static VG_REGPARM(2) void trace_modify(Addr addr, SizeT size)
     global_counter.heap++;
   }
   else{
-    VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
+    //VG_(sprintf)(_sz_tid, "%lu %d G", size, _tid);
     global_counter.global++;
   }
 
   if(fnname != NULL){
     finish_trace_line(addr, size, _debug_info);
-    VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n", _address, _sz_tid, current_soname, fnname, _debug_info);
+    //VG_(sprintf)(line_buffer,"%s %s %s::%s %s\n", _address, _sz_tid, current_soname, fnname, _debug_info);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, _debug_info);
   }
   else{
-    VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+    //VG_(sprintf)(line_buffer,"%s %s %s\n",_address, _sz_tid, current_soname);
+		// Unused current_soname adn fnname for mapvis
+    VG_(sprintf)(line_buffer,"%s %s %s \n",_address, _sz_tid, fnname);
   }
   wrout(fd_trace, line_buffer);
 }
@@ -868,7 +883,7 @@ static void pre_sb(Addr addr)
 //      clo_instrumentation_state == False)
 //    return;
 
-  Int i = 0;
+  int i = 0;
   DebugInfo* dinfo = VG_(find_DebugInfo) ( addr );
   if( GL_UNLIKELY(dinfo == NULL) ) {
     VG_(strcpy)(current_soname, "NULL"); 
@@ -897,6 +912,9 @@ static void pre_sb(Addr addr)
     if(VG_(strcmp)(clo_ignored_soname, soname) != 0){
       for(i=0; clo_ignore_sonames[i] != NULL && i<64; i++){
         if( VG_(strcmp)(clo_ignore_sonames[i], soname) == 0){
+					clo_instrument_sonames_state = False;
+					VG_(strcpy)(clo_ignored_soname, soname); //we jumped out but found new ignored lib
+					soname[0] = '\0';
           return;
         }
       }
@@ -1428,8 +1446,7 @@ static void gl_post_clo_init(void)
 /*
  * SB-instrument
  */
-  static
-IRSB* gl_instrument( VgCallbackClosure* closure,
+  static IRSB* gl_instrument( VgCallbackClosure* closure,
     IRSB* sbIn, 
     const VexGuestLayout* layout, 
     const VexGuestExtents* vge,
